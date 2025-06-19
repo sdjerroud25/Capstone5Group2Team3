@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PLC Tag Reader</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 1em; }
+    pre { background: #f0f0f0; padding: 1em; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>PLC Tag Data Viewer</h1>
+  <div id="output"></div>
+
+  <script>
+    const tagNames = [
+      "HMI_GVL.M.Rob2.ROBOTPOS.Z",
+      "HMI_GVL.M.Rob3.ROBOTPOS.X",
+      "HMI_GVL.M.Rob4.ROBOTPOS.Y"
+    ];
+
+    const API_BASE_URL = "http://192.168.0.210/plcdata"; // Replace with your real endpoint
+
+    async function fetchTagData(tag) {
+      try {
+	let url = `${API_BASE_URL}/${encodeURIComponent(tag)}`;
+	console.log(url);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        return { tag, data };
+      } catch (error) {
+        return { tag, error: error.message };
+      }
+    }
+
+    async function fetchAllTags() {
+      const output = document.getElementById("output");
+      output.innerHTML = "<p>Loading data...</p>";
+
+      const results = await Promise.all(tagNames.map(fetchTagData));
+
+      output.innerHTML = ""; // Clear loading text
+      results.forEach(({ tag, data, error }) => {
+        const block = document.createElement("div");
+        block.innerHTML = `
+          <h3>${tag}</h3>
+          <pre>${error ? `Error: ${error}` : JSON.stringify(data, null, 2)}</pre>
+        `;
+        output.appendChild(block);
+      });
+    }
+
+    // Repeat every 1 second
+    fetchAllTags();
+    setInterval(fetchAllTags, 1000);
+  </script>
+</body>
+</html>

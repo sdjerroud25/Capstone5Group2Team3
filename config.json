@@ -1,0 +1,6 @@
+{
+  "protocol": "https://",
+  "ip": "jsonplaceholder.typicode.com",
+  "port": 443,
+  "resource": "/todos/"
+}
